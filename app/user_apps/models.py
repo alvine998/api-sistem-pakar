@@ -3,13 +3,25 @@ import MySQLdb.cursors
 from datetime import datetime
 
 
-class User:
-    def __init__(self, id=None, name=None, email=None, password=None, role="super_admin", status=1):
+def calculate_age(birth_date):
+    today = datetime.today()
+    age = (
+        today.year
+        - birth_date.year
+        - ((today.month, today.day) < (birth_date.month, birth_date.day))
+    )
+    return age
+
+
+class UserApp:
+    def __init__(self, id, name, email, phone, birth_date, age, password, status):
         self.id = id
         self.name = name
         self.email = email
+        self.phone = phone
+        self.birth_date = birth_date
+        self.age = age
         self.password = password
-        self.role = role
         self.status = status
 
     @staticmethod
@@ -20,17 +32,23 @@ class User:
         if search:
             # Search by name or email
             cursor.execute(
-                "SELECT * FROM users WHERE deleted=0 AND name LIKE %s OR email LIKE %s LIMIT %s, %s",
-                ("%" + search + "%", "%" + search + "%", offset, limit),
+                "SELECT * FROM user_apps WHERE deleted=0 AND name LIKE %s OR email LIKE %s OR phone LIKE %s LIMIT %s, %s",
+                (
+                    "%" + search + "%",
+                    "%" + search + "%",
+                    "%" + search + "%",
+                    offset,
+                    limit,
+                ),
             )
         else:
             cursor.execute(
-                "SELECT * FROM users WHERE deleted=0 LIMIT %s, %s", (offset, limit)
+                "SELECT * FROM user_apps WHERE deleted=0 LIMIT %s, %s", (offset, limit)
             )
 
         users_data = cursor.fetchall()
         cursor.close()
-        
+
         users = []
         for user_data in users_data:
             users.append(
@@ -39,20 +57,22 @@ class User:
                     name=user_data[1],
                     email=user_data[2],
                     password=user_data[3],
-                    role=user_data[4],
-                    status=user_data[5],
+                    phone=user_data[4],
+                    birth_date=user_data[5],
+                    age=user_data[6],
+                    status=user_data[7],
                 )
             )
 
         return users
 
     @staticmethod
-    def create(name, email, password, role, status):
+    def create(name, email, password, phone, birth_date):
         hash_password = bcrypt.generate_password_hash(password).decode("utf-8")
         cursor = mysql.connection.cursor()
         cursor.execute(
-            "INSERT INTO users (name, email, password, role, status) VALUES (%s, %s, %s, %s, %s)",
-            (name, email, hash_password, role, status),
+            "INSERT INTO user_apps (name, email, password, phone, birth_date, age, status) VALUES (%s, %s, %s, %s, %s, %s, %s, 1)",
+            (name, email, hash_password, phone, birth_date, calculate_age(birth_date)),
         )
         mysql.connection.commit()
         cursor.close()
@@ -60,7 +80,7 @@ class User:
     @staticmethod
     def get_by_id(id):
         cursor = mysql.connection.cursor()
-        cursor.execute("SELECT * FROM users WHERE id = %s AND deleted=0", (id,))
+        cursor.execute("SELECT * FROM user_apps WHERE id = %s AND deleted=0", (id,))
         user_data = cursor.fetchone()
         cursor.close()
 
@@ -70,10 +90,14 @@ class User:
                 name=user_data[1],
                 email=user_data[2],
                 password=user_data[3],
+                phone=user_data[4],
+                birth_date=user_data[5],
+                age=user_data[6],
+                status=user_data[7],
             )
         return None
 
-    def update(self, name=None, email=None, password=None, role=None, status=None):
+    def update(self, name=None, email=None, password=None, phone=None, birth_date=None, age=None, status=None):
         cursor = mysql.connection.cursor()
         if name:
             self.name = name
@@ -81,28 +105,32 @@ class User:
             self.email = email
         if password:
             self.password = bcrypt.generate_password_hash(password).decode("utf-8")
-        if role:
-            self.role = role
+        if phone:
+            self.phone = phone
+        if birth_date:
+            self.birth_date = birth_date
+        if age:
+            self.age = age
         if status:
             self.status = status
 
         cursor.execute(
-            "UPDATE users SET name=%s, email=%s, password=%s, role=%s, status=%s, updated_on=%s WHERE id=%s",
-            (self.name, self.email, self.password, self.role, self.status, datetime.now(), self.id),
+            "UPDATE user_apps SET name=%s, email=%s, password=%s, phone=%s, birth_date=%s, age=%s, status=%s WHERE id=%s",
+            (self.name, self.email, self.password, self.phone, self.birth_date, calculate_age(self.birth_date),self.status, self.id),
         )
         mysql.connection.commit()
         cursor.close()
 
     def delete(self):
         cursor = mysql.connection.cursor()
-        cursor.execute("UPDATE users SET deleted=%s, updated_on=%s WHERE id=%s", (1, datetime.now(), self.id))
+        cursor.execute("UPDATE user_apps SET deleted=%s WHERE id=%s", (1, self.id))
         mysql.connection.commit()
         cursor.close()
 
     @staticmethod
     def get_by_email(email):
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute("SELECT * FROM users WHERE email = %s AND deleted = 0", (email,))
+        cursor.execute("SELECT * FROM user_apps WHERE email = %s AND deleted = 0", (email,))
         user_data = cursor.fetchone()
         cursor.close()
         if user_data:

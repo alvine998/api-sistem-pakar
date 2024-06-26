@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_mysqldb import MySQLdb
 from .models import User
+from app import mysql, bcrypt
+import MySQLdb.cursors
 
 users = Blueprint("users", __name__)
 
@@ -19,9 +21,8 @@ def register():
     existing_user = User.get_by_email(email)
     if existing_user:
         return jsonify({"message": "Email already exists"}), 409
-
-    new_user = User(name=name, email=email, password=password, role=role)
-    User.create(name=name, email=email, password=new_user.password, role=new_user.role)
+    new_user = User(name=name, email=email, password=password, role=role, status=1)
+    User.create(name=name, email=email, password=new_user.password, role=new_user.role, status=new_user.status)
 
     return jsonify({"message": "User created successfully"}), 201
 
