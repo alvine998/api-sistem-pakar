@@ -30,4 +30,7 @@ def create_app():
     from .diseases.routes import diseases as diseases_blueprint
     app.register_blueprint(diseases_blueprint, url_prefix='/diseases')
 
+    from .medicines.routes import medicines as medicines_blueprint
+    app.register_blueprint(medicines_blueprint, url_prefix='/medicines')
+
     return app
