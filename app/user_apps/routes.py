@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_mysqldb import MySQLdb
 from .models import UserApp
+from datetime import datetime
+
 
 userapps = Blueprint("userapps", __name__)
 
@@ -27,7 +29,12 @@ def register():
         return jsonify({"message": "Email already exists"}), 409
 
     new_user = UserApp(
-        name=name, email=email, password=password, phone=phone, birth_date=birth_date
+        name=name,
+        email=email,
+        password=password,
+        phone=phone,
+        birth_date=birth_date,
+        status=1,
     )
     UserApp.create(
         name=name,
@@ -35,6 +42,7 @@ def register():
         password=new_user.password,
         phone=new_user.phone,
         birth_date=new_user.birth_date,
+        status=new_user.status,
     )
 
     return jsonify({"message": "User created successfully"}), 201
@@ -108,7 +116,6 @@ def get_users():
                 "email": user.email,
                 "phone": user.phone,
                 "birth_date": user.birth_date,
-                "age": user.age,
                 "status": user.status,
             }
         )

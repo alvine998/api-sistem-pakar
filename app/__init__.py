@@ -21,7 +21,7 @@ def create_app():
     from .users.routes import users as users_blueprint
     app.register_blueprint(users_blueprint, url_prefix='/users')
 
-    # from .offices import offices as offices_blueprint
-    # app.register_blueprint(offices_blueprint, url_prefix='/offices')
+    from .user_apps.routes import userapps as userapps_blueprint
+    app.register_blueprint(userapps_blueprint, url_prefix='/userapps')
 
     return app
