@@ -22,7 +22,13 @@ def register():
     if existing_user:
         return jsonify({"message": "Email already exists"}), 409
     new_user = User(name=name, email=email, password=password, role=role, status=1)
-    User.create(name=name, email=email, password=new_user.password, role=new_user.role, status=new_user.status)
+    User.create(
+        name=name,
+        email=email,
+        password=new_user.password,
+        role=new_user.role,
+        status=new_user.status,
+    )
 
     return jsonify({"message": "User created successfully"}), 201
 
@@ -64,31 +70,29 @@ def login_users():
 
     user = User.get_by_email(email)
     if user and user.check_password(password):
-        return jsonify({"message": "Valid credentials"}), 200
+        return jsonify({"message": "Valid credentials", "user": user.to_dick()}), 200
     else:
         return jsonify({"message": "Invalid credentials"}), 401
 
 
 @users.route("/list", methods=["GET"])
 def get_users():
-    page = request.args.get('page', default=1, type=int)
-    limit = request.args.get('limit', default=10, type=int)
-    search = request.args.get('search')
+    page = request.args.get("page", default=1, type=int)
+    limit = request.args.get("limit", default=10, type=int)
+    search = request.args.get("search")
 
     users = User.get_users(page=page, limit=limit, search=search)
 
     users_list = []
     for user in users:
-        users_list.append({
-            'id': user.id,
-            'name': user.name,
-            'email': user.email,
-            'role': user.role,
-            'status': user.status
-        })
+        users_list.append(
+            {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role,
+                "status": user.status,
+            }
+        )
 
-    return jsonify({
-        'items': users_list,
-        'page': page,
-        'limit': limit
-    })
+    return jsonify({"items": users_list, "page": page, "limit": limit})

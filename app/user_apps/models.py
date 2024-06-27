@@ -22,6 +22,16 @@ class UserApp:
         self.password = password
         self.status = status
 
+    def to_dick(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
+            "birth_date": self.birth_date,
+            "status": self.status,
+        }
+
     @staticmethod
     def get_users(page, limit, search=None):
         offset = (page - 1) * limit
@@ -156,11 +166,16 @@ class UserApp:
         )
         user_data = cursor.fetchone()
         cursor.close()
+        print(user_data)
         if user_data:
             return UserApp(
+                id=user_data["id"],
                 name=user_data["name"],
                 email=user_data["email"],
                 password=user_data["password"],
+                phone=user_data["phone"],
+                birth_date=user_data["birth_date"],
+                status=user_data["status"],
             )
         return None
 

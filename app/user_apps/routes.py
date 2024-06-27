@@ -94,7 +94,7 @@ def login_users():
 
     user = UserApp.get_by_email(email)
     if user and user.check_password(password):
-        return jsonify({"message": "Valid credentials"}), 200
+        return jsonify({"message": "Valid credentials", "user":user.to_dick()}), 200
     else:
         return jsonify({"message": "Invalid credentials"}), 401
 

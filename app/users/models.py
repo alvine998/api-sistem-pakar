@@ -4,13 +4,30 @@ from datetime import datetime
 
 
 class User:
-    def __init__(self, id=None, name=None, email=None, password=None, role="super_admin", status=1):
+    def __init__(
+        self,
+        id=None,
+        name=None,
+        email=None,
+        password=None,
+        role="super_admin",
+        status=1,
+    ):
         self.id = id
         self.name = name
         self.email = email
         self.password = password
         self.role = role
         self.status = status
+
+    def to_dick(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "role": self.role,
+            "status": self.status,
+        }
 
     @staticmethod
     def get_users(page, limit, search=None):
@@ -30,7 +47,7 @@ class User:
 
         users_data = cursor.fetchall()
         cursor.close()
-        
+
         users = []
         for user_data in users_data:
             users.append(
@@ -88,14 +105,25 @@ class User:
 
         cursor.execute(
             "UPDATE users SET name=%s, email=%s, password=%s, role=%s, status=%s, updated_on=%s WHERE id=%s",
-            (self.name, self.email, self.password, self.role, self.status, datetime.now(), self.id),
+            (
+                self.name,
+                self.email,
+                self.password,
+                self.role,
+                self.status,
+                datetime.now(),
+                self.id,
+            ),
         )
         mysql.connection.commit()
         cursor.close()
 
     def delete(self):
         cursor = mysql.connection.cursor()
-        cursor.execute("UPDATE users SET deleted=%s, updated_on=%s WHERE id=%s", (1, datetime.now(), self.id))
+        cursor.execute(
+            "UPDATE users SET deleted=%s, updated_on=%s WHERE id=%s",
+            (1, datetime.now(), self.id),
+        )
         mysql.connection.commit()
         cursor.close()
 
@@ -107,9 +135,12 @@ class User:
         cursor.close()
         if user_data:
             return User(
+                id=user_data["id"],
                 name=user_data["name"],
                 email=user_data["email"],
                 password=user_data["password"],
+                role=user_data["role"],
+                status=user_data["status"],
             )
         return None
 
