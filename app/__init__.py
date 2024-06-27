@@ -24,4 +24,7 @@ def create_app():
     from .user_apps.routes import userapps as userapps_blueprint
     app.register_blueprint(userapps_blueprint, url_prefix='/userapps')
 
+    from .symptoms.routes import symptoms as symptoms_blueprint
+    app.register_blueprint(symptoms_blueprint, url_prefix='/symptoms')
+
     return app

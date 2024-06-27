@@ -74,7 +74,7 @@ class UserApp:
         return users
 
     @staticmethod
-    def create(name, email, password, phone, birth_date, age, status):
+    def create(name, email, password, phone, birth_date, status):
         hash_password = bcrypt.generate_password_hash(password).decode("utf-8")
         cursor = mysql.connection.cursor()
         cursor.execute(
