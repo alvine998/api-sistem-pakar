@@ -26,7 +26,7 @@ class Disease:
         if search:
             # Search by name or email
             cursor.execute(
-                "SELECT * FROM diseases WHERE deleted=0 AND name LIKE %s LIMIT %s, %s",
+                "SELECT * FROM diseases WHERE deleted=0 AND name LIKE %s LIMIT %s ORDER BY id DESC, %s",
                 ("%" + search + "%", offset, limit),
             )
         else:

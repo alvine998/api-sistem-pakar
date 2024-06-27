@@ -40,7 +40,7 @@ class UserApp:
         if search:
             # Search by name or email
             cursor.execute(
-                "SELECT * FROM user_apps WHERE deleted=0 AND name LIKE %s OR email LIKE %s OR phone LIKE %s LIMIT %s, %s",
+                "SELECT * FROM user_apps WHERE deleted=0 AND name LIKE %s OR email LIKE %s OR phone LIKE %s LIMIT %s ORDER BY id DESC, %s",
                 (
                     "%" + search + "%",
                     "%" + search + "%",
