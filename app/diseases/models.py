@@ -31,7 +31,7 @@ class Disease:
         items = cursor.fetchall()
 
         # Count all items
-        cursor.execute("SELECT COUNT(*) FROM diseases")
+        cursor.execute("SELECT COUNT(*) FROM diseases WHERE deleted=0")
         count_result = cursor.fetchone()
         total_count = count_result[0] if count_result else 0
 
