@@ -26,12 +26,12 @@ class Disease:
         if search:
             # Search by name or email
             cursor.execute(
-                "SELECT * FROM diseases WHERE deleted=0 AND name LIKE %s LIMIT %s ORDER BY id DESC, %s",
+                "SELECT * FROM diseases WHERE deleted=0 AND name LIKE %s ORDER BY id DESC LIMIT %s , %s",
                 ("%" + search + "%", offset, limit),
             )
         else:
             cursor.execute(
-                "SELECT * FROM diseases WHERE deleted=0 LIMIT %s, %s", (offset, limit)
+                "SELECT * FROM diseases WHERE deleted=0 ORDER BY id DESC LIMIT %s, %s", (offset, limit)
             )
 
         items = cursor.fetchall()

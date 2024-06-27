@@ -40,7 +40,7 @@ class UserApp:
         if search:
             # Search by name or email
             cursor.execute(
-                "SELECT * FROM user_apps WHERE deleted=0 AND name LIKE %s OR email LIKE %s OR phone LIKE %s LIMIT %s ORDER BY id DESC, %s",
+                "SELECT * FROM user_apps WHERE deleted=0 AND name LIKE %s OR email LIKE %s OR phone LIKE %s ORDER BY id DESC LIMIT %s, %s",
                 (
                     "%" + search + "%",
                     "%" + search + "%",
@@ -51,7 +51,7 @@ class UserApp:
             )
         else:
             cursor.execute(
-                "SELECT * FROM user_apps WHERE deleted=0 LIMIT %s, %s", (offset, limit)
+                "SELECT * FROM user_apps WHERE deleted=0 ORDER BY id DESC LIMIT %s, %s", (offset, limit)
             )
 
         users_data = cursor.fetchall()

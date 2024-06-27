@@ -37,12 +37,12 @@ class User:
         if search:
             # Search by name or email
             cursor.execute(
-                "SELECT * FROM users WHERE deleted=0 AND name LIKE %s OR email LIKE %s LIMIT %s, %s",
+                "SELECT * FROM users WHERE deleted=0 AND name LIKE %s OR email LIKE %s ORDER BY id DESC LIMIT %s, %s",
                 ("%" + search + "%", "%" + search + "%", offset, limit),
             )
         else:
             cursor.execute(
-                "SELECT * FROM users WHERE deleted=0 LIMIT %s, %s", (offset, limit)
+                "SELECT * FROM users WHERE deleted=0 ORDER BY id DESC LIMIT %s, %s", (offset, limit)
             )
 
         users_data = cursor.fetchall()
