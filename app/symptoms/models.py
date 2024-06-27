@@ -35,6 +35,12 @@ class Symptom:
             )
 
         items = cursor.fetchall()
+
+         # Count all items
+        cursor.execute("SELECT COUNT(*) FROM symptoms")
+        count_result = cursor.fetchone()
+        total_count = count_result[0] if count_result else 0
+
         cursor.close()
 
         arrays = []
@@ -46,7 +52,12 @@ class Symptom:
                 )
             )
 
-        return arrays
+        response = {
+            "items": arrays,
+            "total_count": total_count
+        }
+
+        return response
 
     @staticmethod
     def create(name):

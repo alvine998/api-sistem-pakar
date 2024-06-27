@@ -51,10 +51,17 @@ class UserApp:
             )
         else:
             cursor.execute(
-                "SELECT * FROM user_apps WHERE deleted=0 ORDER BY id DESC LIMIT %s, %s", (offset, limit)
+                "SELECT * FROM user_apps WHERE deleted=0 ORDER BY id DESC LIMIT %s, %s",
+                (offset, limit),
             )
 
         users_data = cursor.fetchall()
+
+        # Count all items
+        cursor.execute("SELECT COUNT(*) FROM user_apps")
+        count_result = cursor.fetchone()
+        total_count = count_result[0] if count_result else 0
+
         cursor.close()
 
         users = []
@@ -71,7 +78,12 @@ class UserApp:
                 )
             )
 
-        return users
+        response = {
+            "items": users,
+            "total_count": total_count
+        }
+
+        return response
 
     @staticmethod
     def create(name, email, password, phone, birth_date, status):

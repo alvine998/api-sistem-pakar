@@ -4,22 +4,13 @@ from datetime import datetime
 
 
 class Medicine:
-    def __init__(
-        self,
-        id=None,
-        name=None,
-        dose=None
-    ):
+    def __init__(self, id=None, name=None, dose=None):
         self.id = id
         self.name = name
         self.dose = dose
 
     def to_dick(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "dose": self.dose
-        }
+        return {"id": self.id, "name": self.name, "dose": self.dose}
 
     @staticmethod
     def get_data(page, limit, search=None):
@@ -34,30 +25,38 @@ class Medicine:
             )
         else:
             cursor.execute(
-                "SELECT * FROM medicines WHERE deleted=0 ORDER BY id DESC LIMIT %s, %s", (offset, limit)
+                "SELECT * FROM medicines WHERE deleted=0 ORDER BY id DESC LIMIT %s, %s",
+                (offset, limit),
             )
 
         items = cursor.fetchall()
+
+        # Count all items
+        cursor.execute("SELECT COUNT(*) FROM medicines")
+        count_result = cursor.fetchone()
+        total_count = count_result[0] if count_result else 0
+
         cursor.close()
 
         arrays = []
         for item in items:
-            arrays.append(
-                Medicine(
-                    id=item[0],
-                    name=item[1],
-                    dose=item[2]
-                )
-            )
+            arrays.append(Medicine(id=item[0], name=item[1], dose=item[2]))
 
-        return arrays
+        response = {
+            "items": arrays,
+            "total_count": total_count
+        }
 
+        return response
     @staticmethod
     def create(name, dose):
         cursor = mysql.connection.cursor()
         cursor.execute(
             "INSERT INTO medicines (name, dose) VALUES (%s, %s)",
-            (name, dose,),
+            (
+                name,
+                dose,
+            ),
         )
         mysql.connection.commit()
         cursor.close()
@@ -70,11 +69,7 @@ class Medicine:
         cursor.close()
 
         if items:
-            return Medicine(
-                id=items[0],
-                name=items[1],
-                dose=items[2]
-            )
+            return Medicine(id=items[0], name=items[1], dose=items[2])
         return None
 
     def update(self, name=None, dose=None):

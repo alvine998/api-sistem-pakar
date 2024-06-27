@@ -48,10 +48,10 @@ def get():
     limit = request.args.get("limit", default=10, type=int)
     search = request.args.get("search")
 
-    symptoms = Symptom.get_data(page=page, limit=limit, search=search)
+    result = Symptom.get_data(page=page, limit=limit, search=search)
 
     symptoms_list = []
-    for user in symptoms:
+    for user in result["items"]:
         symptoms_list.append({"id": user.id, "name": user.name})
 
-    return jsonify({"items": symptoms_list, "page": page, "limit": limit})
+    return jsonify({"items": symptoms_list,  "total_items": result["total_count"], "page": page, "limit": limit})

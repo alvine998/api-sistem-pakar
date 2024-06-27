@@ -46,6 +46,13 @@ class User:
             )
 
         users_data = cursor.fetchall()
+
+        # Count all items
+        cursor.execute("SELECT COUNT(*) FROM users")
+        count_result = cursor.fetchone()
+        total_count = count_result[0] if count_result else 0
+
+
         cursor.close()
 
         users = []
@@ -61,7 +68,12 @@ class User:
                 )
             )
 
-        return users
+        response = {
+            "items": users,
+            "total_count": total_count
+        }
+
+        return response
 
     @staticmethod
     def create(name, email, password, role, status):

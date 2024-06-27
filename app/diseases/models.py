@@ -4,19 +4,12 @@ from datetime import datetime
 
 
 class Disease:
-    def __init__(
-        self,
-        id=None,
-        name=None
-    ):
+    def __init__(self, id=None, name=None):
         self.id = id
         self.name = name
 
     def to_dick(self):
-        return {
-            "id": self.id,
-            "name": self.name
-        }
+        return {"id": self.id, "name": self.name}
 
     @staticmethod
     def get_data(page, limit, search=None):
@@ -31,22 +24,29 @@ class Disease:
             )
         else:
             cursor.execute(
-                "SELECT * FROM diseases WHERE deleted=0 ORDER BY id DESC LIMIT %s, %s", (offset, limit)
+                "SELECT * FROM diseases WHERE deleted=0 ORDER BY id DESC LIMIT %s, %s",
+                (offset, limit),
             )
 
         items = cursor.fetchall()
+
+        # Count all items
+        cursor.execute("SELECT COUNT(*) FROM diseases")
+        count_result = cursor.fetchone()
+        total_count = count_result[0] if count_result else 0
+
         cursor.close()
 
         arrays = []
         for item in items:
-            arrays.append(
-                Disease(
-                    id=item[0],
-                    name=item[1]
-                )
-            )
+            arrays.append(Disease(id=item[0], name=item[1]))
 
-        return arrays
+        response = {
+            "items": arrays,
+            "total_count": total_count
+        }
+
+        return response
 
     @staticmethod
     def create(name):
@@ -66,10 +66,7 @@ class Disease:
         cursor.close()
 
         if items:
-            return Disease(
-                id=items[0],
-                name=items[1]
-            )
+            return Disease(id=items[0], name=items[1])
         return None
 
     def update(self, name=None):

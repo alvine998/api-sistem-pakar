@@ -81,10 +81,10 @@ def get_users():
     limit = request.args.get("limit", default=10, type=int)
     search = request.args.get("search")
 
-    users = User.get_users(page=page, limit=limit, search=search)
+    result = User.get_users(page=page, limit=limit, search=search)
 
     users_list = []
-    for user in users:
+    for user in result["items"]:
         users_list.append(
             {
                 "id": user.id,
@@ -95,4 +95,4 @@ def get_users():
             }
         )
 
-    return jsonify({"items": users_list, "page": page, "limit": limit})
+    return jsonify({"items": users_list, "total_items": result["total_count"], "page": page, "limit": limit})
