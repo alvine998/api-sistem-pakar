@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_mysqldb import MySQL
 from flask_bcrypt import Bcrypt
+from flask_cors import CORS
 
 mysql = MySQL()
 bcrypt = Bcrypt()
@@ -8,6 +9,7 @@ bcrypt = Bcrypt()
 def create_app():
     app = Flask(__name__)
     
+    CORS(app)
     # Configure the app
     app.config.from_object('config.Config')
 
