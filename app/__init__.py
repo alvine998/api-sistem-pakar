@@ -35,4 +35,10 @@ def create_app():
     from .medicines.routes import medicines as medicines_blueprint
     app.register_blueprint(medicines_blueprint, url_prefix='/medicines')
 
+    from .diagnose.routes import diagnose as diagnose_blueprint
+    app.register_blueprint(diagnose_blueprint, url_prefix='/diagnose')
+
+    from .datasets.routes import datasets as datasets_blueprint
+    app.register_blueprint(datasets_blueprint, url_prefix='/datasets')
+
     return app
