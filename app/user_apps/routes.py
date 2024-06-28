@@ -14,12 +14,22 @@ def register():
     email = data.get("email")
     password = data.get("password")
     phone = data.get("phone")
+    gender = data.get("gender")
     birth_date = data.get("birth_date")
 
-    if not name or not email or not password or not phone or not birth_date:
+    if (
+        not name
+        or not email
+        or not password
+        or not phone
+        or not birth_date
+        or not gender
+    ):
         return (
             jsonify(
-                {"message": "Name, email, phone, birht_date, password are required"}
+                {
+                    "message": "Name, email, phone, birht_date, password, gender are required"
+                }
             ),
             400,
         )
@@ -34,6 +44,7 @@ def register():
         password=password,
         phone=phone,
         birth_date=birth_date,
+        gender=gender,
         status=1,
     )
     UserApp.create(
@@ -42,6 +53,7 @@ def register():
         password=new_user.password,
         phone=new_user.phone,
         birth_date=new_user.birth_date,
+        gender=new_user.gender,
         status=new_user.status,
     )
 
@@ -55,6 +67,7 @@ def update_user(user_id):
     email = data.get("email")
     password = data.get("password")
     phone = data.get("phone")
+    gender = data.get("gender")
     birth_date = data.get("birth_date")
     status = data.get("status")
 
@@ -68,6 +81,7 @@ def update_user(user_id):
         password=password,
         phone=phone,
         birth_date=birth_date,
+        gender=birth_date,
         status=status,
     )
 
@@ -94,7 +108,7 @@ def login_users():
 
     user = UserApp.get_by_email(email)
     if user and user.check_password(password):
-        return jsonify({"message": "Valid credentials", "user":user.to_dick()}), 200
+        return jsonify({"message": "Valid credentials", "user": user.to_dick()}), 200
     else:
         return jsonify({"message": "Invalid credentials"}), 401
 
@@ -115,9 +129,17 @@ def get_users():
                 "name": user.name,
                 "email": user.email,
                 "phone": user.phone,
+                "gender": user.gender,
                 "birth_date": user.birth_date,
                 "status": user.status,
             }
         )
 
-    return jsonify({"items": users_list,  "total_items": result["total_count"], "page": page, "limit": limit})
+    return jsonify(
+        {
+            "items": users_list,
+            "total_items": result["total_count"],
+            "page": page,
+            "limit": limit,
+        }
+    )

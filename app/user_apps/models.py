@@ -12,6 +12,7 @@ class UserApp:
         phone=None,
         birth_date=None,
         password=None,
+        gender=None,
         status=1,
     ):
         self.id = id
@@ -21,6 +22,7 @@ class UserApp:
         self.birth_date = birth_date
         self.password = password
         self.status = status
+        self.gender = gender
 
     def to_dick(self):
         return {
@@ -28,6 +30,7 @@ class UserApp:
             "name": self.name,
             "email": self.email,
             "phone": self.phone,
+            "gender": self.gender,
             "birth_date": self.birth_date,
             "status": self.status,
         }
@@ -73,30 +76,29 @@ class UserApp:
                     birth_date=user_data[2],
                     phone=user_data[3],
                     email=user_data[4],
-                    password=user_data[5],
-                    status=user_data[6],
+                    gender=user_data[5],
+                    password=user_data[6],
+                    status=user_data[7],
                 )
             )
 
-        response = {
-            "items": users,
-            "total_count": total_count
-        }
+        response = {"items": users, "total_count": total_count}
 
         return response
 
     @staticmethod
-    def create(name, email, password, phone, birth_date, status):
+    def create(name, email, password, phone, birth_date, status, gender):
         hash_password = bcrypt.generate_password_hash(password).decode("utf-8")
         cursor = mysql.connection.cursor()
         cursor.execute(
-            "INSERT INTO user_apps (name, email, password, phone, birth_date, status) VALUES (%s, %s, %s, %s, %s, %s)",
+            "INSERT INTO user_apps (name, email, password, phone, birth_date,gender, status) VALUES (%s, %s, %s, %s, %s, %s, %s)",
             (
                 name,
                 email,
                 hash_password,
                 phone,
                 birth_date,
+                gender,
                 status,
             ),
         )
@@ -117,8 +119,9 @@ class UserApp:
                 birth_date=user_data[2],
                 phone=user_data[3],
                 email=user_data[4],
-                password=user_data[5],
-                status=user_data[6],
+                gender=user_data[5],
+                password=user_data[6],
+                status=user_data[7],
             )
         return None
 
@@ -129,6 +132,7 @@ class UserApp:
         password=None,
         phone=None,
         birth_date=None,
+        gender=None,
         status=None,
     ):
         cursor = mysql.connection.cursor()
@@ -144,9 +148,11 @@ class UserApp:
             self.birth_date = birth_date
         if status:
             self.status = status
+        if gender:
+            self.gender = gender
 
         cursor.execute(
-            "UPDATE user_apps SET name=%s, email=%s, password=%s, phone=%s, birth_date=%s, status=%s, updated_on=%s WHERE id=%s",
+            "UPDATE user_apps SET name=%s, email=%s, password=%s, phone=%s, birth_date=%s, status=%s, gender=%s, updated_on=%s WHERE id=%s",
             (
                 self.name,
                 self.email,
@@ -154,6 +160,7 @@ class UserApp:
                 self.phone,
                 self.birth_date,
                 self.status,
+                self.gender,
                 datetime.now(),
                 self.id,
             ),
@@ -186,6 +193,7 @@ class UserApp:
                 email=user_data["email"],
                 password=user_data["password"],
                 phone=user_data["phone"],
+                gender=user_data["gender"],
                 birth_date=user_data["birth_date"],
                 status=user_data["status"],
             )
