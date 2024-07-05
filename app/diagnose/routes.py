@@ -23,7 +23,7 @@ def create():
     cursor.execute("SELECT level FROM dataset_diseases WHERE deleted=0")
     level = cursor.fetchall()
     list_level = [item[0] for item in level]
-    cursor.execute("SELECT disease_name FROM dataset_diseases WHERE deleted=0")
+    cursor.execute("SELECT diagnose FROM dataset_diseases WHERE deleted=0")
     disease = cursor.fetchall()
     list_disease = [item[0] for item in disease]
 
@@ -32,7 +32,7 @@ def create():
         "symptoms": list_symptom,
         "period": list_period,
         "level": list_level,
-        "diseases": list_disease,
+        "diagnose": list_disease,
     }
     df = pd.DataFrame(data)
 
@@ -44,7 +44,7 @@ def create():
 
     x_combine = sp.hstack((x_symptom, df[["period", "level"]]))
 
-    y = df["diseases"]
+    y = df["diagnose"]
 
     x_train, x_test, y_train, y_test = train_test_split(
         x_combine, y, test_size=0.2, random_state=42

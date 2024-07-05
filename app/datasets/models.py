@@ -8,15 +8,14 @@ class Dataset:
         self,
         id=None,
         symptoms=None,
-        disease_id=None,
+        diagnose=None,
         disease_name=None,
         period=None,
         level=None,
     ):
         self.id = id
         self.symptoms = symptoms
-        self.disease_id = disease_id
-        self.disease_name = disease_name
+        self.diagnose = diagnose
         self.period = period
         self.level = level
 
@@ -24,8 +23,7 @@ class Dataset:
         return {
             "id": self.id,
             "symptoms": self.symptoms,
-            "disease_id": self.disease_id,
-            "disease_name": self.disease_name,
+            "diagnose": self.diagnose,
             "period": self.period,
             "level": self.level,
         }
@@ -64,8 +62,7 @@ class Dataset:
                     symptoms=item[1],
                     period=item[2],
                     level=item[3],
-                    disease_id=item[4],
-                    disease_name=item[5],
+                    diagnose=item[4],
                 )
             )
 
@@ -74,11 +71,11 @@ class Dataset:
         return response
 
     @staticmethod
-    def create(symptoms, period, level, disease_id, disease_name):
+    def create(symptoms, period, level, diagnose, disease_name):
         cursor = mysql.connection.cursor()
         cursor.execute(
-            "INSERT INTO dataset_diseases (symptoms, period, level, disease_id, disease_name) VALUES (%s, %s, %s, %s, %s)",
-            (symptoms, period, level, disease_id, disease_name),
+            "INSERT INTO dataset_diseases (symptoms, period, level, diagnose, disease_name) VALUES (%s, %s, %s, %s, %s)",
+            (symptoms, period, level, diagnose, disease_name),
         )
         mysql.connection.commit()
         cursor.close()
@@ -98,13 +95,12 @@ class Dataset:
                 symptoms=items[1],
                 period=items[2],
                 level=items[3],
-                disease_id=items[4],
-                disease_name=items[5],
+                diagnose=items[4],
             )
         return None
 
     def update(
-        self, symptoms=None, period=None, level=None, disease_id=None, disease_name=None
+        self, symptoms=None, period=None, level=None, diagnose=None, disease_name=None
     ):
         cursor = mysql.connection.cursor()
         if symptoms:
@@ -113,19 +109,16 @@ class Dataset:
             self.period = period
         if level:
             self.level = level
-        if disease_id:
-            self.disease_id = disease_id
-        if disease_name:
-            self.disease_name = disease_name
+        if diagnose:
+            self.diagnose = diagnose
 
         cursor.execute(
-            "UPDATE dataset_diseases SET symptoms=%s, period=%s, level=%s, disease_id=%s, disease_name=%s, updated_on=%s WHERE id=%s",
+            "UPDATE dataset_diseases SET symptoms=%s, period=%s, level=%s, diagnose=%s updated_on=%s WHERE id=%s",
             (
                 self.symptoms,
                 self.period,
                 self.level,
-                self.disease_id,
-                self.disease_name,
+                self.diagnose,
                 datetime.now(),
                 self.id,
             ),
