@@ -12,10 +12,10 @@ def create():
     symptoms = data.get("symptoms")
     period = data.get("period")
     level = data.get("level")
-    disease_id = data.get("disease_id")
-    disease_name = data.get("disease_name")
+    diagnose = data.get("diagnose")
+    medicine = data.get("medicine")
 
-    if not symptoms or not period or not level or not disease_id or not disease_name:
+    if not symptoms or not period or not level or not diagnose or not medicine:
         return (
             jsonify({"message": "Symptoms, Period, Level, Disease are required"}),
             400,
@@ -25,8 +25,8 @@ def create():
         symptoms=symptoms,
         period=period,
         level=level,
-        disease_id=disease_id,
-        disease_name=disease_name,
+        diagnose=diagnose,
+        medicine=medicine,
     )
 
     return jsonify({"message": "Data created successfully"}), 201
@@ -38,8 +38,8 @@ def update(dataset_id):
     symptoms = data.get("symptoms")
     period = data.get("period")
     level = data.get("level")
-    disease_id = data.get("disease_id")
-    disease_name = data.get("disease_name")
+    diagnose = data.get("diagnose")
+    medicine = data.get("medicine")
 
     dataset = Dataset.get_by_id(dataset_id)
     if not dataset:
@@ -49,8 +49,8 @@ def update(dataset_id):
         symptoms=symptoms,
         period=period,
         level=level,
-        disease_id=disease_id,
-        disease_name=disease_name,
+        diagnose=diagnose,
+        medicine=medicine,
     )
 
     return jsonify({"message": "dataset updated successfully"}), 200
@@ -81,8 +81,8 @@ def get():
                 "symptoms": item.symptoms,
                 "period": item.period,
                 "level": item.level,
-                "disease_id": item.disease_id,
-                "disease_name": item.disease_name,
+                "diagnose": item.diagnose,
+                "medicine": item.medicine,
             }
         )
 
