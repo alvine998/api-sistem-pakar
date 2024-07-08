@@ -119,7 +119,7 @@ class Dataset:
             self.medicine = medicine
 
         cursor.execute(
-            "UPDATE dataset_diseases SET symptoms=%s, period=%s, level=%s, diagnose=%s, medicine=%s updated_on=%s WHERE id=%s",
+            "UPDATE dataset_diseases SET symptoms=%s, period=%s, level=%s, diagnose=%s, medicine=%s, updated_on=%s WHERE id=%s",
             (
                 self.symptoms,
                 self.period,
