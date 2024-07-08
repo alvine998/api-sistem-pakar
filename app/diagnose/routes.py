@@ -4,76 +4,110 @@ from app import mysql, bcrypt
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import MultinomialNB
+from sklearn.naive_bayes import MultinomialNB, GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, classification_report
 import json
 
 diagnose = Blueprint("diagnose", __name__)
 
 
-@diagnose.route("/predict", methods=["POST"])
-def create():
-    cursor = mysql.connection.cursor()
-    cursor.execute("SELECT symptoms FROM dataset_diseases WHERE deleted=0")
-    symptoms = cursor.fetchall()
-    list_symptom = [item[0] for item in symptoms]
-    cursor.execute("SELECT period FROM dataset_diseases WHERE deleted=0")
-    period = cursor.fetchall()
-    list_period = [item[0] for item in period]
-    cursor.execute("SELECT level FROM dataset_diseases WHERE deleted=0")
-    level = cursor.fetchall()
-    list_level = [item[0] for item in level]
-    cursor.execute("SELECT diagnose FROM dataset_diseases WHERE deleted=0")
-    disease = cursor.fetchall()
-    list_disease = [item[0] for item in disease]
-
+def train_model():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        "SELECT symptoms, period, level, diagnose, medicine FROM dataset_diseases"
+    )
+    data = cursor.fetchall()
     cursor.close()
-    data = {
-        "symptoms": list_symptom,
-        "period": list_period,
-        "level": list_level,
-        "diagnose": list_disease,
-    }
+
     df = pd.DataFrame(data)
+    X = df[["symptoms", "period", "level"]]
+    y_disease = df["diagnose"]
+    y_medicine = df["medicine"]
 
-    # x = df[["symptoms", "period", "level"]]
-    vectorizer = CountVectorizer()
-    x_symptom = vectorizer.fit_transform(df["symptoms"])
+    X = pd.get_dummies(X, columns=["symptoms", "period"])
 
-    import scipy.sparse as sp
-
-    x_combine = sp.hstack((x_symptom, df[["period", "level"]]))
-
-    y = df["diagnose"]
-
-    x_train, x_test, y_train, y_test = train_test_split(
-        x_combine, y, test_size=0.2, random_state=42
+    # Split the data into training and testing sets
+    X_train_disease, X_test_disease, y_train_disease, y_test_disease = train_test_split(
+        X, y_disease, test_size=0.3, random_state=42
     )
 
-    model = MultinomialNB()
-    model.fit(x_train, y_train)
+    # Train Naive Bayes model for disease prediction
+    nb_model = GaussianNB()
+    nb_model.fit(X_train_disease, y_train_disease)
+    # model = GaussianNB()
+    # model.fit(X, y)
 
-    y_pred = model.predict(x_test)
+    # Predict on the test set and calculate accuracy for disease prediction
+    y_pred_disease = nb_model.predict(X_test_disease)
+    accuracy_disease = accuracy_score(y_test_disease, y_pred_disease)
 
-    print("Akurasi: ", accuracy_score(y_test, y_pred))
-    print("Diagnosa: ", classification_report(y_test, y_pred))
+    # Split the data into training and testing sets for medicine recommendation
+    X_train_medicine, X_test_medicine, y_train_medicine, y_test_medicine = (
+        train_test_split(X, y_medicine, test_size=0.3, random_state=42)
+    )
 
+    # Train KNN model for medicine recommendation
+    knn_model = KNeighborsClassifier(n_neighbors=5)
+    knn_model.fit(X_train_medicine, y_train_medicine)
+
+    # Predict on the test set and calculate accuracy for medicine recommendation
+    y_pred_medicine = knn_model.predict(X_test_medicine)
+    accuracy_medicine = accuracy_score(y_test_medicine, y_pred_medicine)
+
+    return nb_model, knn_model, X.columns, accuracy_disease, accuracy_medicine
+
+
+def predict_disease(model, model_columns, symptoms, period, level):
+    input_data = pd.DataFrame(
+        {"symptoms": [symptoms], "period": [period], "level": [level]}
+    )
+    input_data = pd.get_dummies(input_data, columns=["symptoms", "period"])
+
+    # Ensure all necessary columns are present
+    for col in model_columns:
+        if col not in input_data:
+            input_data[col] = 0
+
+    prediction = model.predict(input_data[model_columns])[0]
+    return prediction
+
+
+# Function to recommend medicine using the trained KNN model
+def recommend_medicine(model, model_columns, symptoms, period, level):
+    input_data = pd.DataFrame(
+        {"symptoms": [symptoms], "period": [period], "level": [level]}
+    )
+    input_data = pd.get_dummies(input_data, columns=["symptoms", "period"])
+
+    # Ensure all necessary columns are present
+    for col in model_columns:
+        if col not in input_data:
+            input_data[col] = 0
+
+    recommendation = model.predict(input_data[model_columns])[0]
+    return recommendation
+
+
+@diagnose.route("/predict", methods=["POST"])
+def create():
     inputs = request.get_json()
-    data1 = inputs.get("symptom")
-    data2 = inputs.get("level")
-    data3 = inputs.get("period")
+    data1 = inputs.get("symptoms")
+    data2 = inputs.get("period")
+    data3 = inputs.get("level")
+    print(inputs)
 
-    input_vectorized = vectorizer.transform([data1])
-    input_combined = sp.hstack((input_vectorized, [[data2, data3]]))
-    predicted_disease = model.predict(input_combined)
-
-    return (
-        jsonify(
-            {
-                "score": accuracy_score(y_test, y_pred),
-                "classification": classification_report(y_test, y_pred),
-                "diagnose": predicted_disease[0],
-            }
-        ),
-        201,
+    nb_model, knn_model, model_columns, accuracy_disease, accuracy_medicine = (
+        train_model()
+    )
+    disease = predict_disease(nb_model, model_columns, data1, data2, data3)
+    medicine = recommend_medicine(knn_model, model_columns, data1, data2, data3)
+    return jsonify(
+        {
+            "accuracy_disease": accuracy_disease,
+            "diagnose": disease,
+            "accuracy_medicine": accuracy_medicine,
+            "medicine": medicine,
+        },
+        200,
     )
