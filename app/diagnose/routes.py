@@ -6,7 +6,13 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB, GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    precision_score,
+    recall_score,
+    f1_score,
+)
 import json
 
 diagnose = Blueprint("diagnose", __name__)
@@ -41,6 +47,9 @@ def train_model():
     # Predict on the test set and calculate accuracy for disease prediction
     y_pred_disease = nb_model.predict(X_test_disease)
     accuracy_disease = accuracy_score(y_test_disease, y_pred_disease)
+    precision_disease = precision_score(y_test_disease, y_pred_disease, average='macro')
+    recall_disease = recall_score(y_test_disease, y_pred_disease, average='macro')
+    f1_disease = f1_score(y_test_disease, y_pred_disease, average='macro')
 
     # Split the data into training and testing sets for medicine recommendation
     X_train_medicine, X_test_medicine, y_train_medicine, y_test_medicine = (
@@ -55,7 +64,16 @@ def train_model():
     y_pred_medicine = knn_model.predict(X_test_medicine)
     accuracy_medicine = accuracy_score(y_test_medicine, y_pred_medicine)
 
-    return nb_model, knn_model, X.columns, accuracy_disease, accuracy_medicine
+    return (
+        nb_model,
+        knn_model,
+        X.columns,
+        accuracy_disease,
+        accuracy_medicine,
+        precision_disease,
+        recall_disease,
+        f1_disease,
+    )
 
 
 def predict_disease(model, model_columns, symptoms, period, level):
@@ -97,17 +115,27 @@ def create():
     data3 = inputs.get("level")
     print(inputs)
 
-    nb_model, knn_model, model_columns, accuracy_disease, accuracy_medicine = (
-        train_model()
-    )
+    (
+        nb_model,
+        knn_model,
+        model_columns,
+        accuracy_disease,
+        accuracy_medicine,
+        precision_disease,
+        recall_disease,
+        f1_disease,
+    ) = train_model()
     disease = predict_disease(nb_model, model_columns, data1, data2, data3)
     medicine = recommend_medicine(knn_model, model_columns, data1, data2, data3)
     return jsonify(
         {
-            "accuracy_disease": accuracy_disease,
-            "diagnose": disease,
-            "accuracy_medicine": accuracy_medicine,
-            "medicine": medicine,
+            "disease_accuracy_score": accuracy_disease,
+            "disease_precision_score": precision_disease,
+            "disease_recall_score": recall_disease,
+            "disease_f1_score": f1_disease,
+            "disease_diagnose": disease,
+            "medicine_accuracy_score": accuracy_medicine,
+            "medicine_recommendation": medicine,
         },
         200,
     )
