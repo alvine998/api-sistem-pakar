@@ -14,6 +14,7 @@ from sklearn.metrics import (
     f1_score,
 )
 import json
+from .models import Diagnose
 
 diagnose = Blueprint("diagnose", __name__)
 
@@ -47,9 +48,9 @@ def train_model():
     # Predict on the test set and calculate accuracy for disease prediction
     y_pred_disease = nb_model.predict(X_test_disease)
     accuracy_disease = accuracy_score(y_test_disease, y_pred_disease)
-    precision_disease = precision_score(y_test_disease, y_pred_disease, average='macro')
-    recall_disease = recall_score(y_test_disease, y_pred_disease, average='macro')
-    f1_disease = f1_score(y_test_disease, y_pred_disease, average='macro')
+    precision_disease = precision_score(y_test_disease, y_pred_disease, average="macro")
+    recall_disease = recall_score(y_test_disease, y_pred_disease, average="macro")
+    f1_disease = f1_score(y_test_disease, y_pred_disease, average="macro")
 
     # Split the data into training and testing sets for medicine recommendation
     X_train_medicine, X_test_medicine, y_train_medicine, y_test_medicine = (
@@ -113,7 +114,8 @@ def create():
     data1 = inputs.get("symptoms")
     data2 = inputs.get("period")
     data3 = inputs.get("level")
-    print(inputs)
+    data4 = inputs.get("user_app_id")
+    data5 = inputs.get("user_app_name")
 
     (
         nb_model,
@@ -127,6 +129,27 @@ def create():
     ) = train_model()
     disease = predict_disease(nb_model, model_columns, data1, data2, data3)
     medicine = recommend_medicine(knn_model, model_columns, data1, data2, data3)
+
+    cursor = mysql.connection.cursor()
+    cursor.execute(
+        "INSERT INTO diagnose_histories (user_app_id, user_app_name, symptoms, period, level, disease_accuracy_score, disease_precision_score, disease_recall_score, disease_f1_score, disease_diagnose, medicine_accuracy_score, medicine_recommendation) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        (
+            data4,
+            data5,
+            data1,
+            data2,
+            data3,
+            accuracy_disease,
+            precision_disease,
+            recall_disease,
+            f1_disease,
+            disease,
+            accuracy_medicine,
+            medicine,
+        ),
+    )
+    mysql.connection.commit()
+    cursor.close()
     return jsonify(
         {
             "disease_accuracy_score": accuracy_disease,
@@ -138,4 +161,41 @@ def create():
             "medicine_recommendation": medicine,
         },
         200,
+    )
+
+
+@diagnose.route("/list", methods=["GET"])
+def get():
+    page = request.args.get("page", default=1, type=int)
+    limit = request.args.get("limit", default=10, type=int)
+    search = request.args.get("search")
+
+    result = Diagnose.get_data(page=page, limit=limit, search=search)
+
+    diagnose_list = []
+    for item in result["items"]:
+        diagnose_list.append(
+            {
+                "id": item.id,
+                "symptoms": item.symptoms,
+                "period": item.period,
+                "level": item.level,
+                "user_app_id": item.user_app_id,
+                "user_app_name": item.user_app_name,
+                "disease_accuracy_score": item.disease_accuracy_score,
+                "disease_precision_score": item.disease_precision_score,
+                "disease_recall_score": item.disease_recall_score,
+                "disease_f1_score": item.disease_f1_score,
+                "disease_diagnose": item.disease_diagnose,
+                "medicine_accuracy_score": item.medicine_accuracy_score,
+                "created_on": item.created_on,            }
+        )
+
+    return jsonify(
+        {
+            "items": diagnose_list,
+            "total_items": result["total_count"],
+            "page": page,
+            "limit": limit,
+        }
     )
