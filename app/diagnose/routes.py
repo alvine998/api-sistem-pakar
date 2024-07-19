@@ -127,6 +127,8 @@ def create():
         recall_disease,
         f1_disease,
     ) = train_model()
+    xx = train_model()
+    print(xx)
     disease = predict_disease(nb_model, model_columns, data1, data2, data3)
     medicine = recommend_medicine(knn_model, model_columns, data1, data2, data3)
 
