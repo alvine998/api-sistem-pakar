@@ -32,8 +32,9 @@ def train_model():
     y_disease = df["diagnose"]
     y_medicine = df["medicine"]
 
-    X = pd.get_dummies(X, columns=["symptoms", "period"])
-
+    X_encoded = pd.get_dummies(X, columns=["symptoms", "period"])
+    X = pd.concat([X_encoded, X["level"]], axis=1)
+    X = X.copy()
     # Split the data into training and testing sets
     X_train_disease, X_test_disease, y_train_disease, y_test_disease = train_test_split(
         X, y_disease, test_size=0.3, random_state=42
@@ -48,9 +49,15 @@ def train_model():
     # Predict on the test set and calculate accuracy for disease prediction
     y_pred_disease = nb_model.predict(X_test_disease)
     accuracy_disease = accuracy_score(y_test_disease, y_pred_disease)
-    precision_disease = precision_score(y_test_disease, y_pred_disease, average="macro")
-    recall_disease = recall_score(y_test_disease, y_pred_disease, average="macro")
-    f1_disease = f1_score(y_test_disease, y_pred_disease, average="macro")
+    precision_disease = precision_score(
+        y_test_disease, y_pred_disease, average="macro", zero_division=0
+    )
+    recall_disease = recall_score(
+        y_test_disease, y_pred_disease, average="macro", zero_division=0
+    )
+    f1_disease = f1_score(
+        y_test_disease, y_pred_disease, average="macro", zero_division=0
+    )
 
     # Split the data into training and testing sets for medicine recommendation
     X_train_medicine, X_test_medicine, y_train_medicine, y_test_medicine = (
@@ -190,7 +197,8 @@ def get():
                 "disease_f1_score": item.disease_f1_score,
                 "disease_diagnose": item.disease_diagnose,
                 "medicine_accuracy_score": item.medicine_accuracy_score,
-                "created_on": item.created_on,            }
+                "created_on": item.created_on,
+            }
         )
 
     return jsonify(
