@@ -59,6 +59,8 @@ def train_model():
         y_test_disease, y_pred_disease, average="macro", zero_division=0
     )
 
+    print(accuracy_disease * 100)
+
     # Split the data into training and testing sets for medicine recommendation
     X_train_medicine, X_test_medicine, y_train_medicine, y_test_medicine = (
         train_test_split(X, y_medicine, test_size=0.3, random_state=42)
@@ -134,8 +136,6 @@ def create():
         recall_disease,
         f1_disease,
     ) = train_model()
-    xx = train_model()
-    print(xx)
     disease = predict_disease(nb_model, model_columns, data1, data2, data3)
     medicine = recommend_medicine(knn_model, model_columns, data1, data2, data3)
 
@@ -197,6 +197,7 @@ def get():
                 "disease_f1_score": item.disease_f1_score,
                 "disease_diagnose": item.disease_diagnose,
                 "medicine_accuracy_score": item.medicine_accuracy_score,
+                "medicine_recommendation": item.medicine_recommendation,
                 "created_on": item.created_on,
             }
         )
