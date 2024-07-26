@@ -51,6 +51,10 @@ class Disease:
     @staticmethod
     def create(name):
         cursor = mysql.connection.cursor()
+        cursor.execute("SELECT * FROM diseases WHERE name = %s AND deleted=0", (name,))
+        item = cursor.fetchone()
+        if item:
+            return item
         cursor.execute(
             "INSERT INTO diseases (name) VALUES (%s)",
             (name,),
@@ -73,6 +77,11 @@ class Disease:
         cursor = mysql.connection.cursor()
         if name:
             self.name = name
+
+        cursor.execute("SELECT * FROM diseases WHERE name = %s AND deleted=0", (name,))
+        item = cursor.fetchone()
+        if item:
+            return item
 
         cursor.execute(
             "UPDATE diseases SET name=%s, updated_on=%s WHERE id=%s",

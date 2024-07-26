@@ -13,8 +13,13 @@ def create():
 
     if not name:
         return jsonify({"message": "Name are required"}), 400
+    
+    nameupper = name.upper()
 
-    Disease.create(name=name)
+    result = Disease.create(name=nameupper)
+
+    if result:
+        return jsonify({"message": "disease exist"}, 200)
 
     return jsonify({"message": "disease created successfully"}), 201
 
@@ -27,8 +32,13 @@ def update(disease_id):
     disease = Disease.get_by_id(disease_id)
     if not disease:
         return jsonify({"message": "disease not found"}), 404
+    
+    nameupper = name.upper()
 
-    disease.update(name=name)
+    result = disease.update(name=nameupper)
+
+    if result:
+        return jsonify({"message": "disease exist"}, 200)
 
     return jsonify({"message": "disease updated successfully"}), 200
 
