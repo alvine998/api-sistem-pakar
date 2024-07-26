@@ -19,7 +19,7 @@ def create():
     result = Disease.create(name=nameupper)
 
     if result:
-        return jsonify({"message": "disease exist"}, 200)
+        return jsonify({"message": "disease exist"}, 400)
 
     return jsonify({"message": "disease created successfully"}), 201
 
@@ -38,7 +38,7 @@ def update(disease_id):
     result = disease.update(name=nameupper)
 
     if result:
-        return jsonify({"message": "disease exist"}, 200)
+        return jsonify({"message": "disease exist"}, 400)
 
     return jsonify({"message": "disease updated successfully"}), 200
 
